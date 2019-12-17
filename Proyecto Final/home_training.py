@@ -5,11 +5,11 @@ from postura import Momentos
 import nn_trainer as nnt
 
 
-def guardar_archivo(file, frames, y):
-    if file and frames:
-        pos = frames.pop()
-        file.write(str(pos.nombre) + " " + str(pos.hu[0][0]) + " " + str(pos.hu[1][0]) + " " + str(pos.hu[2][0]) + " " + str(pos.hu[3][0]) + " " + str(pos.hu[4][0]) + " " + str(pos.hu[5][0]) + " " + str(pos.hu[6][0]) + " " + str(y) + '\n')
-        guardar_archivo(file, frames, y)
+def guardar_archivo(file, y):
+    if file and y:
+        y1 = y.pop()
+        file.write(str(y1[0]) + " " + str(y1[1]) + "\n")
+        guardar_archivo(file, y)
 
 def leer_archivo(file):
     if file:
@@ -55,14 +55,14 @@ def setNombre(y):
 def main():
     # Create a VideoCapture object
     #cap = cv2.VideoCapture(0)
-    cap = cv2.VideoCapture("videos/Angel Sentadilla.mp4")
+    cap = cv2.VideoCapture("videos/Angel Stand.mp4")
     n = 0
-
+    y = []
     # Check if camera opened successfully
     if (cap.isOpened() == False):
         print("Unable to read camera feed")
 
-    file_o = open("database.txt", "r")
+    file_o = open("basedatos.txt", "r")
     if file_o:
         frames_hu = leer_archivo(file_o)
 
@@ -93,7 +93,7 @@ def main():
             pos = Postura(dif, frame)
             #print(len(frames_hu))
 
-            if cont < 3:
+            if cont < 10:
                 frames.append(np.array(pos.hu).flatten())
                 ys.append(pos.y)
                 cont+=1
@@ -102,15 +102,22 @@ def main():
             else:
                 for i in range(len(frames_hu)):
                     if frames_hu[i]:
-                        #print(frames_hu[i].hu, frames_hu[i].y)
+                        print(frames_hu[i].nom)
                         #print("for trainning: ", n)
-                        y = nnt.trainning(frames_hu[i], frames, ys)  #  for en el que cambie de parado->sentadilla->etc
+                        w = nnt.trainning(frames_hu[i], frames, ys)
+                        if y:
+                            pop = y.pop()
+                            if len(pop) == len(w):
+                                y.append(pop)
+                            else:
+                                y.append(w)
+                        else:
+                            y.append(w)
 
                 #pos.setName(texto)
                 pos.setName(setNombre(y))
                 cont = 0
                 frames = []
-
                 ys = []
 
 
@@ -125,11 +132,11 @@ def main():
         #termina el video
 
 
-    #file_c = open("entrenamiento.txt", "a+")
-    #guardar_archivo(file_c, frames, y)
+    file_c = open("entrenamiento.txt", "a+")
+    guardar_archivo(file_c, y)
 
     file_o.close()
-    #file_c.close()
+    file_c.close()
     cap.release()
 
     #cierra la ventana
