@@ -8,7 +8,7 @@ class Postura():
         self.orginal = orig
         self.hu = self.momentosHU(img)
         self.nombre = ""
-        self.y = 0.
+        self.y = float(np.random.randint(0, 4))
 
     def area(self, img):
         mayor = cv2.__version__.split('.')[0]

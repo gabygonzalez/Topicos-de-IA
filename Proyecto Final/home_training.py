@@ -55,7 +55,7 @@ def setNombre(y):
 def main():
     # Create a VideoCapture object
     #cap = cv2.VideoCapture(0)
-    cap = cv2.VideoCapture("videos/Angel Stand.mp4")
+    cap = cv2.VideoCapture("videos/Angel Sentadilla.mp4")
     n = 0
 
     # Check if camera opened successfully
@@ -67,7 +67,8 @@ def main():
         frames_hu = leer_archivo(file_o)
 
     frames = []
-    y = []
+    ys = []
+    cont = 0
 
     while (True):
         ret, frame = cap.read()
@@ -90,21 +91,27 @@ def main():
             #dif = cv2.absdiff(bg, im)
             dif = cv2.absdiff(bbg, blurred_im)
             pos = Postura(dif, frame)
-            print(len(frames_hu))
-            for i in range(len(frames_hu)):
-                if frames_hu[i]:
-                    #print(frames_hu[i].hu, frames_hu[i].y)
-                    #print("for trainning: ", n)
-                    y = nnt.trainning(frames_hu[i], pos)  #  for en el que cambie de parado->sentadilla->etc
+            #print(len(frames_hu))
 
+            if cont < 3:
+                frames.append(np.array(pos.hu).flatten())
+                ys.append(pos.y)
+                cont+=1
+                #pos_hu = Momentos(pos.nombre, pos.hu, y)
 
+            else:
+                for i in range(len(frames_hu)):
+                    if frames_hu[i]:
+                        #print(frames_hu[i].hu, frames_hu[i].y)
+                        #print("for trainning: ", n)
+                        y = nnt.trainning(frames_hu[i], frames, ys)  #  for en el que cambie de parado->sentadilla->etc
 
-            #pos.setName(texto)
-            pos.setName(setNombre(y))
-            pos_hu = Momentos(pos.nombre, pos.hu, y)
+                #pos.setName(texto)
+                pos.setName(setNombre(y))
+                cont = 0
+                frames = []
 
-            frames.append(pos)
-            frames_hu.append(pos_hu)
+                ys = []
 
 
             #'q' para detener el video
