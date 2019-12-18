@@ -26,28 +26,75 @@ def leer_archivo(file):
             l = linea.split()
             x = list(map(lambda x: float(x), l[1:8]))
             #print(x)
-            if l[0] != pos.nom:
-                pos = Momentos(l[0], x, float(l[len(l)-1]))
-                #print(x, y)
-            else:
-                pos.momentoshu(x, float(l[len(l)-1]))
-                #print(x, y)
-
-            frames.append(pos)
+            pos.momentoshu(x, float(l[len(l)-1]))
+            #print(x, y)
         pos.printmomentos()
-        return frames
+        return pos
     return None
 
+def count(list):
+    cero = 0
+    uno = 0
+    dos = 0
+    tres = 0
+    cuatro = 0
+    n = len(list)
+
+    for i in range(n):
+        if 0. == list[i]:
+            cero+=1
+        elif 1. == list[i]:
+            uno+=1
+        elif 2. == list[i]:
+            dos+=1
+        elif 3. == list[i]:
+            tres+=1
+        else:
+            cuatro+=1
+
+    return (cero, uno, dos, tres, cuatro)
+
+def sort(list):
+    aux = [0,1]
+    aux1 = []
+    arr0 = []
+    arr1 = []
+    n = len(list)
+    for i in range(n):
+        aux1 = list.pop()
+        arr0.append(aux1[0])
+        arr1.append(aux1[1][0])
+
+    print(arr0, arr1)
+
+    for i in range(n):
+        for j in range(n-1):
+            if arr0[j] < arr0[j + 1]:
+                aux[0] = arr0[j]
+                aux[1] = arr1[j]
+                arr0[j] = arr0[j + 1]
+                arr1[j] = arr1[j + 1]
+                arr0[j + 1] = aux[0]
+                arr1[j + 1] = aux[1]
+
+    print(arr0, arr1)
+    x = count(arr1)
+    return arr1[0], x
+
 def setNombre(y):
-    if y == 0.:
+    #ordenar arreglo por y[0], mayor == posicion
+    y = sort(y)
+    x = count(y[1])
+
+    if y[0] == 0.: #or x[0] == 5:
         return "Parado"
-    elif y == 1.:
+    elif y[0] == 1.: # or x[0] == 3 and x[1] == 1 and x[2] == 2:
         return "Sentadilla"
-    elif y == 2.:
+    elif y[0] == 2.: # or x[0] == 4 and x[2] == 2:
         return "Flyes"
-    elif y == 3.:
+    elif y[0] == 3.: # or x[1] == 5 and x[2] == 1 or x[1] == 1 and x[2] == 2:
         return "Abdominales"
-    elif y == 4.:
+    elif y[0] == 4.: # or x[4] == 3:
         return "Lagartijas"
     else:
         return "No encontrado"
@@ -55,14 +102,15 @@ def setNombre(y):
 def main():
     # Create a VideoCapture object
     #cap = cv2.VideoCapture(0)
-    cap = cv2.VideoCapture("videos/Angel Stand.mp4")
+    #cap = cv2.VideoCapture("videos/originales/angel.mp4")
+    cap = cv2.VideoCapture("videos/angel sentadilla.mp4")
     n = 0
     y = []
     # Check if camera opened successfully
     if (cap.isOpened() == False):
         print("Unable to read camera feed")
 
-    file_o = open("basedatos.txt", "r")
+    file_o = open("database.txt", "r")
     if file_o:
         frames_hu = leer_archivo(file_o)
 
@@ -93,33 +141,24 @@ def main():
             pos = Postura(dif, frame)
             #print(len(frames_hu))
 
-            if cont < 10:
+            if cont < 11:
                 frames.append(np.array(pos.hu).flatten())
                 ys.append(pos.y)
                 cont+=1
-                #pos_hu = Momentos(pos.nombre, pos.hu, y)
 
             else:
-                for i in range(len(frames_hu)):
-                    if frames_hu[i]:
-                        print(frames_hu[i].nom)
-                        #print("for trainning: ", n)
-                        w = nnt.trainning(frames_hu[i], frames, ys)
-                        if y:
-                            pop = y.pop()
-                            if len(pop) == len(w):
-                                y.append(pop)
-                            else:
-                                y.append(w)
-                        else:
-                            y.append(w)
+                if frames_hu:
+                    #print("for trainning: ", n)
+                    y.append(nnt.trainning(frames_hu, frames, ys))
 
-                #pos.setName(texto)
-                pos.setName(setNombre(y))
                 cont = 0
                 frames = []
                 ys = []
 
+                if y and len(y) > 5:
+                    pos.setName(setNombre(y))
+                    print(pos.nombre)
+                    y = []
 
             #'q' para detener el video
             if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -131,12 +170,13 @@ def main():
 
         #termina el video
 
-
-    file_c = open("entrenamiento.txt", "a+")
-    guardar_archivo(file_c, y)
+    pos.setName(setNombre(y))
+    print(pos.nombre)
+    #file_c = open("basedatos.txt", "a+")
+    #guardar_archivo(file_c, y)
 
     file_o.close()
-    file_c.close()
+    #file_c.close()
     cap.release()
 
     #cierra la ventana

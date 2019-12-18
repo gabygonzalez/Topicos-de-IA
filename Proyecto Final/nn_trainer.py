@@ -1,17 +1,15 @@
 import numpy as np
-from matplotlib import pyplot as plt
-from matplotlib.colors import ListedColormap
-from sklearn.model_selection import train_test_split
+from sklearn.linear_model import Perceptron
 from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import classification_report,confusion_matrix
+from sklearn.metrics import classification_report,confusion_matrix, accuracy_score
 from sklearn.neural_network import MLPClassifier
 from postura import Momentos
 
 
 def trainning(momento, frames, ys):
-    nn = MLPClassifier(hidden_layer_sizes=(10,6), max_iter=10, alpha=1e-5,
-                    solver='sgd', verbose=10, random_state=1,
-                    learning_rate_init=.03)
+    nn = MLPClassifier(hidden_layer_sizes=(20,10,15), max_iter=10, alpha=1e-5,
+                    solver='lbfgs', verbose=10, random_state=1,
+                    learning_rate_init=.1, activation='identity')
 
     x_train = np.array(momento.hu)
     #print(x_train)
@@ -23,20 +21,22 @@ def trainning(momento, frames, ys):
     #print(y_test)
 
     scaler = StandardScaler()
-
     scaler.fit(x_train)
-    x_train = scaler.transform(x_train)
-    x_test = scaler.transform(x_test)
 
-    nn.fit(x_train, y_train)
+    x_train_sc = scaler.transform(x_train)
+    x_test_sc = scaler.transform(x_test)
 
-    predict_y = nn.predict(x_test)
+    nn.fit(x_train_sc, y_train)
+
+    predict_y = nn.predict(x_test_sc)
 
     print(confusion_matrix(y_test, predict_y))
     print(classification_report(y_test, predict_y))
+    accuracy_score(y_test, predict_y)
 
     #print("train score: %f" % nn.score(x_train, y_train))
-    print("test score: %f" % nn.score(x_test, y_test))
-    print("test predict: ", nn.predict(x_test))
+    #print("test score: %f" % nn.score(x_test_sc, y_test))
+    #print("test predict: ", nn.predict(x_test_sc))
 
-    return np.array(nn.coefs_[0]).flatten(), np.array(nn.coefs_[1]).flatten()
+    return nn.score(x_test_sc, y_test)*100, nn.predict(x_test_sc)
+
