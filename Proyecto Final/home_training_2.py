@@ -85,36 +85,38 @@ def setNombre(y):
     #ordenar arreglo por y[0], mayor == posicion
     y = sort(y)
     x = y[1]
-    print(x)
 
-    if  x[0] == 5:
+    if y[0] == 0.:  # or x[0] == 5:
         return "Parado"
-    elif x[0] == 3 and x[1] == 1 and x[2] == 2:
+    elif y[0] == 1.:  # or x[0] == 3 and x[1] == 1 and x[2] == 2:
         return "Sentadilla"
-    elif x[0] == 4 and x[2] == 2:
+    elif y[0] == 2.:  # or x[0] == 4 and x[2] == 2:
         return "Flyes"
-    elif x[1] == 5 and x[2] == 1 or x[1] == 1 and x[2] == 2:
+    elif y[0] == 3.:  # or x[1] == 5 and x[2] == 1 or x[1] == 1 and x[2] == 2:
         return "Abdominales"
-    elif x[4] == 3:
-        return "Lagartijas"
-    elif y[0] == 0.:
-        return "Parado"
-    elif y[0] == 1.:
-        return "Sentadilla"
-    elif y[0] == 2.:
-        return "Flyes"
-    elif y[0] == 3.:
-        return "Abdominales"
-    elif y[0] == 4.:
+    elif y[0] == 4.:  # or x[4] == 3:
         return "Lagartijas"
     else:
         return "No encontrado"
+
+    # if x[0] == 5:
+    #     return "Parado"
+    # elif x[0] == 3 and x[1] == 1 and x[2] == 2:
+    #     return "Sentadilla"
+    # elif x[0] == 4 and x[2] == 2:
+    #     return "Flyes"
+    # elif x[1] == 5 and x[2] == 1 or x[1] == 1 and x[2] == 2:
+    #     return "Abdominales"
+    # elif x[4] == 3:
+    #     return "Lagartijas"
+    # else:
+    #     return "No encontrado"
 
 def main():
     # Create a VideoCapture object
     #cap = cv2.VideoCapture(0)
     #cap = cv2.VideoCapture("videos/originales/angel.mp4")
-    cap = cv2.VideoCapture("videos/angel sentadilla.mp4")
+    cap = cv2.VideoCapture("videos/angel flyes.mp4")
     n = 0
     y = []
     # Check if camera opened successfully
@@ -128,6 +130,8 @@ def main():
     frames = []
     ys = []
     cont = 0
+    distancia = int(cap.get(cv2.CAP_PROP_FRAME_COUNT)/10)
+    cdist = 0
 
     while (True):
         ret, frame = cap.read()
@@ -152,24 +156,11 @@ def main():
             pos = Postura(dif, frame)
             #print(len(frames_hu))
 
-            if cont < 11:
+            if cont == cdist:
                 frames.append(np.array(pos.hu).flatten())
                 ys.append(pos.y)
                 cont+=1
-
-            else:
-                if frames_hu:
-                    #print("for trainning: ", n)
-                    y.append(nnt.trainning(frames_hu, frames, ys))
-
-                cont = 0
-                frames = []
-                ys = []
-
-                if y and len(y) > 5:
-                    pos.setName(setNombre(y))
-                    print(pos.nombre)
-                    y = []
+                cdist+=distancia
 
             #'q' para detener el video
             if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -180,6 +171,9 @@ def main():
             break
 
         #termina el video
+    if frames_hu:
+        # print("for trainning: ", n)
+        y.append(nnt.trainning(frames_hu, frames, ys))
 
     pos.setName(setNombre(y))
     print(pos.nombre)

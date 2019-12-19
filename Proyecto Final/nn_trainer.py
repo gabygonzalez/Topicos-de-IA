@@ -32,7 +32,7 @@ def trainning(momento, frames, ys):
 
     print(confusion_matrix(y_test, predict_y))
     print(classification_report(y_test, predict_y))
-    accuracy_score(y_test, predict_y)
+    print(accuracy_score(y_test, predict_y))
 
     #print("train score: %f" % nn.score(x_train, y_train))
     #print("test score: %f" % nn.score(x_test_sc, y_test))
